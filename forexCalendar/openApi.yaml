@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Swagger Petstore - OpenAPI 3.0
+  title: Swagger Forex Calendar - OpenAPI 3.0
   description: |-
     This is a API for forex Calendar APP
     Some useful links:
@@ -74,6 +74,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Events'
+  /searchEvents:
+    get:
+      tags:
+        - Event
+      summary: Search events from server
+      parameters:
+        - in: query
+          name: searchValue
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Events'
   /user/{id}/subscribedEvents:
     get:
       tags:
@@ -112,8 +129,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Countries'
+  /user/{id}/configuration:
+    post:
+      tags:
+        - User
+      summary: Get coutries user is following
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: userId
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
 components:
   schemas:
+    Configuration:
+      type: object
+      properties:
+        onboarding:
+          $ref: '#/components/schemas/OnboardingTuple'
+        emails:
+          type: array
+          items: String
+    Onboarding:
+      type: array
+      items:
+        $ref: '#/components/schemas/OnboardingTuple'
+    OnboardingTuple:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: boolean
+      example:
+        starting: true
     Currencies:
       type: array
       items:
