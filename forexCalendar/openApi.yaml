@@ -28,19 +28,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Currencies'
-  /defaultcurrencies:
-    get:
-      tags:
-        - Currency
-      summary: Get list of preselected currencies in filter
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Currencies'
-  /getEvents:
+  /event/getEvents:
     get:
       tags:
         - Event
@@ -74,11 +62,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Events'
-  /searchEvents:
+  /event/searchEvents:
     get:
       tags:
         - Event
-      summary: Search events from server
+      summary: Search events from server applying user preferences
       parameters:
         - in: query
           name: searchValue
@@ -91,25 +79,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Events'
-  /user/{id}/subscribedEvents:
+  /event/{name}:
     get:
       tags:
-        - User
-      summary: Get events user subscribed
+        - Event
+      summary: Get full info about the event
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: name
           required: true
           schema:
             type: string
-          description: id
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Events'
+                $ref: '#/components/schemas/EventInfo'
+  /event/subscribe:
+    post:
+      tags:
+        - Event
+      summary: Subscribe Event
+      parameters:
+        - in: query
+          name: recurring
+          required: true
+          schema:
+            type: boolean
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Events'
+      responses:
+        '200':
+          description: Successful operation
   /user/{id}/selectedCountries:
     post:
       tags:
@@ -130,6 +137,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Countries'
   /user/{id}/configuration:
+    get:
+      tags:
+        - User
+      summary: Get user configuration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: userId
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
     post:
       tags:
         - User
@@ -148,21 +173,117 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Configuration'
+  /user/{id}/quiz:
+    post:
+      tags:
+        - User
+      summary: Upload Quiz
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: userId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Quiz'
+      responses:
+        '200':
+          description: Successful operation
+  /default/configuration:
+    post:
+      tags:
+        - default
+      summary: Get default configuration
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
+  /default/currencies:
+    get:
+      tags:
+        - default
+      summary: Get list of preselected currencies in filter
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Currencies'
 components:
   schemas:
+    Broker:
+      type: object
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+        image:
+          type: string
+          description: url
     Configuration:
       type: object
       properties:
         onboarding:
-          $ref: '#/components/schemas/OnboardingTuple'
+          $ref: '#/components/schemas/Onboarding'
         emails:
           type: array
-          items: String
+          items:
+            type: string
+        mainMail:
+          type: string
+        name:
+          type: string
+        broker:
+          $ref: '#/components/schemas/Broker'
+        preferences:
+          $ref: '#/components/schemas/Preferences'
+    Preferences:
+      type: object
+      properties:
+        impact:
+          type: string
+          enum:
+            - High
+            - Medium
+            - Low
+        timezone:
+          type: string
+        currencies:
+          type: array
+          items:
+            type: string
+          example: ["USD", "GBP"]
+        countries:
+          type: array
+          items:
+            type: string
+          example: ["US", "GB"]
+    Quiz:
+      type: array
+      items:
+        $ref: '#/components/schemas/Question'
+    Question:
+      type: object
+      properties:
+        value:
+          type: string
+        response:
+          type: string
     Onboarding:
       type: array
       items:
-        $ref: '#/components/schemas/OnboardingTuple'
-    OnboardingTuple:
+        $ref: '#/components/schemas/Screen'
+    Screen:
       type: object
       properties:
         name:
@@ -211,6 +332,66 @@ components:
         changePercentage:
           type: number
           format: float
+      example:
+        date: "2023-07-10 19:00:00"
+        country: "US"
+        event: "Consumer Credit Change (May)"
+        currency: "USD"
+        previous: 20.32
+        estimate: 20.25
+        actual: 7.24
+        change: -13.08
+        impact: "Low"
+        changePercentage: -64.37
+    News:
+      type: object
+      properties:
+        url:
+          type: string
+        img:
+          type: string
+        text:
+          type: string
+    EventInfo:
+      type: object
+      properties:
+        description:
+          type: string
+        news:
+          type: array
+          items:
+            $ref: '#/components/schemas/News'
+        date:
+          type: string
+          format: "offset-date-time"
+        country:
+          type: string
+        event:
+          type: string
+          description: name
+        currency:
+          type: string
+        previous:
+          type: number
+          format: float
+        estimate:
+          type: number
+          format: float
+        actual:
+          type: number
+          format: float
+        change:
+          type: number
+          format: float
+        impact:
+          type: string
+        changePercentage:
+          type: number
+          format: float
+        pastEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/News'
       example:
         date: "2023-07-10 19:00:00"
         country: "US"
