@@ -28,6 +28,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Currencies'
+  /availableCountries:
+    get:
+      tags:
+        - Currency
+      summary: Get list of available Countries
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Countries'
   /event/getEvents:
     get:
       tags:
